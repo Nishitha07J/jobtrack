@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JobTrack</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f4f5f7; }
+    header { padding: 16px 24px; background: #1f2937; color: #fff; }
+    .board { display: flex; gap: 12px; padding: 16px; overflow-x: auto; }
+    .col { flex: 1; min-width: 200px; background: #e5e7eb; border-radius: 8px; padding: 10px; }
+    .col h2 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; color: #374151; }
+    .card { background: #fff; border-radius: 6px; padding: 10px; margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+    .card small { color: #6b7280; }
+    .empty { color: #9ca3af; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header><strong>JobTrack</strong> &middot; {{ total }} applications</header>
+  <div class="board">
+    {% for key, label in columns %}
+    <div class="col">
+      <h2>{{ label }} ({{ grouped[key]|length }})</h2>
+      {% for a in grouped[key] %}
+      <div class="card">
+        <strong>{{ a.company }}</strong><br>
+        <small>{{ a.role }}{% if a.last_event_at %} &middot; {{ a.last_event_at.strftime("%d %b") }}{% endif %}</small>
+      </div>
+      {% else %}
+      <div class="empty">Nothing here</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
