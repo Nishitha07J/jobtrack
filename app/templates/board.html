@@ -14,22 +14,47 @@
             box-shadow: 0 1px 2px rgba(0,0,0,.1); }
     .card small { color: #6b7280; }
     .empty { color: #9ca3af; font-size: 13px; }
+    .list { min-height: 60px; }
+    .card { cursor: grab; }
   </style>
 </head>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script>
+    document.querySelectorAll(".list").forEach(list => {
+      new Sortable(list, {
+        group: "cards",
+        animation: 150,
+        onEnd: async (evt) => {
+          const id = evt.item.dataset.id;
+          const status = evt.to.dataset.status;
+          const res = await fetch(`/applications/${id}/status`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          });
+          if (!res.ok) { alert("Could not save, reloading."); location.reload(); }
+          document.querySelectorAll(".col").forEach(col => {
+            col.querySelector(".count").textContent =
+              col.querySelectorAll(".card").length;
+          });
+        },
+      });
+    });
+  </script>
 <body>
   <header><strong>JobTrack</strong> &middot; {{ total }} applications</header>
   <div class="board">
     {% for key, label in columns %}
     <div class="col">
-      <h2>{{ label }} ({{ grouped[key]|length }})</h2>
-      {% for a in grouped[key] %}
-      <div class="card">
-        <strong>{{ a.company }}</strong><br>
-        <small>{{ a.role }}{% if a.last_event_at %} &middot; {{ a.last_event_at.strftime("%d %b") }}{% endif %}</small>
+      <h2>{{ label }} (<span class="count">{{ grouped[key]|length }}</span>)</h2>
+      <div class="list" data-status="{{ key }}">
+        {% for a in grouped[key] %}
+        <div class="card" data-id="{{ a.id }}">
+          <strong>{{ a.company }}</strong><br>
+          <small>{{ a.role }}{% if a.last_event_at %} &middot; {{ a.last_event_at.strftime("%d %b") }}{% endif %}</small>
+        </div>
+        {% endfor %}
       </div>
-      {% else %}
-      <div class="empty">Nothing here</div>
-      {% endfor %}
     </div>
     {% endfor %}
   </div>
