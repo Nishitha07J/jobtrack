@@ -1,5 +1,5 @@
-sender,subject,body,label,company
-"Acme Careers <no-reply@greenhouse.io>","Thank you for applying to Acme","We received your application for Backend Engineer.",applied,Acme
+sender,subject,body,label,company,role
+"Acme Careers <no-reply@greenhouse.io>","Thank you for applying to Acme","We received your application for Backend Engineer.",applied,Acme,Backend Engineer
 "Globex Recruiting <jobs@lever.co>","Your Globex online assessment","Please complete the HackerRank assessment link below.",oa,Globex
 "Initech HR <hr@initech.com>","Interview invitation","We would like to schedule a call to interview you.",interview,Initech
 "Umbrella Talent <talent@myworkday.com>","Update on your application","Unfortunately we are not moving forward with your application.",rejected,Umbrella
