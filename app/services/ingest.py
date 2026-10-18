@@ -48,7 +48,7 @@ def ingest_email(db: Session, user_id: int, email: EmailIn) -> str:
     if not result.company:
         return "needs_review"     # status known, company unknown
 
-    app = find_or_create_application(db, user_id, result.company)
+    app = find_or_create_application(db, user_id, result.company, result.role or "Unknown")
     maybe_advance_status(app, result.status)
     app.last_event_at = now
     db.add(ApplicationEvent(

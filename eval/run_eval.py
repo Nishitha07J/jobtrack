@@ -12,6 +12,7 @@ rows = list(csv.DictReader(open("eval/labeled_emails.csv", encoding="utf-8")))
 tp, fp, fn = Counter(), Counter(), Counter()
 correct = 0
 company_total = company_ok = 0
+role_total = role_ok = 0
 
 for r in rows:
     res = process(EmailIn(r["sender"], r["subject"], r["body"]))
@@ -27,10 +28,15 @@ for r in rows:
     if r["company"]:
         company_total += 1
         company_ok += (res.company or "").lower() == r["company"].lower()
+    if r.get("role"):
+        role_total += 1
+        role_ok += (res.role or "").lower() == r["role"].lower()
 
 print(f"\nStatus accuracy: {correct}/{len(rows)} = {correct / len(rows):.1%}")
 if company_total:
     print(f"Company extraction: {company_ok}/{company_total} = {company_ok / company_total:.1%}")
+if role_total:
+    print(f"Role extraction: {role_ok}/{role_total} = {role_ok / role_total:.1%}")
 print(f"\n{'label':<10}{'precision':>10}{'recall':>10}")
 for label in ["applied", "oa", "interview", "offer", "rejected", "other"]:
     p = tp[label] / (tp[label] + fp[label]) if tp[label] + fp[label] else 0

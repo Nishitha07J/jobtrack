@@ -14,3 +14,4 @@ class Result:
     company: str | None
     confidence: float
     source: str             # rule | llm
+    role: str| None = None

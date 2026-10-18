@@ -38,9 +38,29 @@ def extract_company(email: EmailIn) -> str | None:
     return name or None
 
 
+
+ROLE_PATTERNS = [
+    r"application for (?:the )?(?:position of |role of )?([A-Z][\w&/+.\-]*(?: [A-Z][\w&/+.\-]*){0,4})",
+    r"(?:the |our )?([A-Z][\w&/+.\-]*(?: [A-Z][\w&/+.\-]*){0,4}) (?:position|role)\b",
+    r"(?:position|role) of ([A-Z][\w&/+.\-]*(?: [A-Z][\w&/+.\-]*){0,4})",
+    r"interview for (?:the )?([A-Z][\w&/+.\-]*(?: [A-Z][\w&/+.\-]*){0,4})",
+]
+
+
+def extract_role(email: EmailIn) -> str | None:
+    text = f"{email.subject}\n{email.body}"
+    for pat in ROLE_PATTERNS:
+        m = re.search(pat, text)
+        if m:
+            role = m.group(1).strip(" .,-")
+            if role.lower() not in ("the", "our", "this", "a"):
+                return role
+    return None
+
 def classify(email: EmailIn) -> Result:
     text = f"{email.subject}\n{email.body}".lower()
     for status, pattern in PATTERNS:
         if re.search(pattern, text):
-            return Result(status, extract_company(email), 0.9, "rule")
+            return Result(status, extract_company(email), 0.9, "rule",
+                          extract_role(email))
     return Result(None, None, 0.0, "rule")
