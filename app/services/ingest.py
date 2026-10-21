@@ -20,9 +20,10 @@ def get_local_user(db: Session) -> User:
 
 
 def ingest_email(db: Session, user_id: int, email: EmailIn) -> str:
-    msg_id = hashlib.sha1(
-        f"{email.sender}|{email.subject}|{email.body}".encode()
-    ).hexdigest()
+    key = "|".join(" ".join(s.split()) for s in (email.sender, email.subject, email.body))
+    msg_id = hashlib.sha1(key.lower().encode()).hexdigest()
+
+    # Idempotency: the same email is never processed twice.
 
     # Idempotency: the same email is never processed twice.
     exists = db.scalar(

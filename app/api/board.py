@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import Application, ApplicationEvent
 from app.db.session import SessionLocal
-from app.services.ingest import get_local_user
+from app.services.ingest import get_local_user, ingest_email
+from app.services.types import EmailIn
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -61,3 +63,30 @@ def set_status(app_id: int, payload: dict, db: Session = Depends(get_db)):
     ))
     db.commit()
     return {"ok": True}
+
+MESSAGES = {
+    "saved": "Saved. The card is on the board.",
+    "skipped": "Not recognised as a job email, so nothing was added.",
+    "needs_review": "Status found but no company name, so it was not added.",
+    "duplicate": "You already added this exact email.",
+}
+
+
+@router.get("/add")
+def add_form(request: Request, result: str | None = None):
+    return templates.TemplateResponse(
+        request, "add.html", {"message": MESSAGES.get(result or "")}
+    )
+
+
+@router.post("/add")
+def add_email(
+    sender: str = Form(""),
+    subject: str = Form(...),
+    body: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    user = get_local_user(db)
+    result = ingest_email(db, user.id, EmailIn(sender, subject, body))
+    db.commit()
+    return RedirectResponse(f"/add?result={result}", status_code=303)
