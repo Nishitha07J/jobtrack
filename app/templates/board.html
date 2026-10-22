@@ -7,6 +7,7 @@
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; background: #f4f5f7; }
     header { padding: 16px 24px; background: #1f2937; color: #fff; }
+    header a { color: #93c5fd; margin-left: 16px; }
     .board { display: flex; gap: 12px; padding: 16px; overflow-x: auto; }
     .col { flex: 1; min-width: 200px; background: #e5e7eb; border-radius: 8px; padding: 10px; }
     .col h2 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; color: #374151; }
@@ -18,7 +19,12 @@
   </style>
 </head>
 <body>
-  <header><strong>JobTrack</strong> &middot; {{ total }} applications</header>
+  <header>
+    <strong>JobTrack</strong> &middot; {{ total }} applications
+    <a href="/add">+ Add email</a>
+    <a href="/review">Review</a>
+  </header>
+
   <div class="board">
     {% for key, label in columns %}
     <div class="col">

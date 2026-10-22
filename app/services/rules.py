@@ -33,9 +33,14 @@ def extract_company(email: EmailIn) -> str | None:
         if m:
             return m.group(1).strip()
     # Fallback: display name from the sender, e.g. "Acme Careers <x@acme.com>"
+        # Fallback: display name from the sender, e.g. "Acme Careers <x@acme.com>"
+    if "<" not in email.sender:
+        return None          # bare address, no display name to trust
     name = email.sender.split("<")[0].strip().strip('"')
     name = GENERIC_WORDS.sub("", name).strip(" -@")
-    return name or None
+    if not name or "@" in name or "." in name:
+        return None          # looks like an address or domain, not a company
+    return name
 
 
 

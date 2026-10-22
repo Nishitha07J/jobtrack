@@ -24,8 +24,6 @@ def ingest_email(db: Session, user_id: int, email: EmailIn) -> str:
     msg_id = hashlib.sha1(key.lower().encode()).hexdigest()
 
     # Idempotency: the same email is never processed twice.
-
-    # Idempotency: the same email is never processed twice.
     exists = db.scalar(
         select(Email.id).where(
             Email.user_id == user_id, Email.gmail_message_id == msg_id
@@ -35,19 +33,20 @@ def ingest_email(db: Session, user_id: int, email: EmailIn) -> str:
         return "duplicate"
 
     now = datetime.now(timezone.utc)
+    result = process(email)
     row = Email(
         user_id=user_id, gmail_message_id=msg_id, thread_id=msg_id,
         sender=email.sender, subject=email.subject, received_at=now,
-        snippet=email.body[:200], classified_at=now,
+        snippet=email.body[:200],
+        classified_at=None if (result.status and not result.company) else now,
     )
     db.add(row)
     db.flush()
 
-    result = process(email)
     if result.status is None:
         return "skipped"          # not a job email
     if not result.company:
-        return "needs_review"     # status known, company unknown
+        return "needs_review"     # parked: classified_at stays NULL
 
     app = find_or_create_application(db, user_id, result.company, result.role or "Unknown")
     maybe_advance_status(app, result.status)
